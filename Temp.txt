@@ -1,0 +1,59 @@
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+
+            //string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB; Initial Catalog=\"Fluffy Bakes\"; Integrated Security=True;Connect Timeout=30;Encrypt=False;";
+            string connectionString = "Data Source=ASUS\\SQLEXPRESS;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
+
+            Console.WriteLine("Enter Product Name: ");
+            string productName = Console.ReadLine();
+
+            Console.WriteLine("Enter Product Category: ");
+            string catergory = Console.ReadLine();
+
+            Console.WriteLine("Enter Stock of Product: ");
+            int stock = int.Parse(Console.ReadLine());
+
+            Console.WriteLine("Enter Product Price: ");
+            int price = int.Parse(Console.ReadLine());
+
+
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+
+                string checkQuery = "SELECT COUNT(*) FROM Products WHERE productName = @productName";
+                using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                {
+                    checkCmd.Parameters.AddWithValue("@productName", productName);
+                    int count = (int)checkCmd.ExecuteScalar();
+
+                    if (count > 0)
+                    {
+                        Console.WriteLine("A product with this name already exists. Please re-enter the product's name.");
+                        return;
+                    }
+                }
+                string insertQuery = "INSERT INTO Products (productName, catergory, quantityInStock, price) VALUES (@productName, @catergory, @quantityInStock, @price)";
+
+                using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@productName", productName);
+                    cmd.Parameters.AddWithValue("@catergory", catergory);
+                    cmd.Parameters.AddWithValue("@quantityInStock", stock);
+                    cmd.Parameters.AddWithValue("@price", price);
+
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    Console.WriteLine(rowsAffected > 0 ? "Product added successfully!" : "Failed to add product.");
+                }
+
+
+            }
+
+
+        }
+    }
